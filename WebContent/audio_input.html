@@ -3,57 +3,116 @@
 <head>
 <meta charset="UTF-8">
 <title>音声入力</title>
+<style>
+/* レスポンシブデザイン対応 */
+body {
+ font-family: Arial, sans-serif;
+ margin: 0;
+ padding: 0;
+ background-color: #f4f4f9;
+}
+
+h1 {
+ text-align: center;
+ margin-top: 20px;
+}
+
+/* ボタンのスタイル */
+button {
+ display: block;
+ width: 80%;
+ margin: 20px auto;
+ padding: 15px;
+ font-size: 18px;
+ color: white;
+ background-color: #007bff;
+ border: none;
+ border-radius: 5px;
+ cursor: pointer;
+ transition: background-color 0.3s;
+}
+
+button:hover {
+ background-color: #0056b3;
+}
+
+/* 結果表示エリア */
+#result-div {
+ padding: 20px;
+ margin: 20px;
+ background-color: #fff;
+ border-radius: 10px;
+ box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+ font-size: 20px;
+ line-height: 1.6;
+ min-height: 100px;
+ overflow-y: auto;
+}
+
+/* ボタンサイズ調整（iPhoneの小さな画面でも使いやすく） */
+@media screen and (max-width: 600px) {
+ button {
+  font-size: 16px;
+  padding: 12px;
+  width: 90%;
+ }
+ #result-div {
+  font-size: 18px;
+ }
+}
+</style>
 </head>
 <body>
+
+    <h1>音声入力（テスト）</h1>
 
     <button id="start-btn">start</button>
     <button id="stop-btn">stop</button>
     <div id="result-div"></div>
 
-
     <script>
-    const startBtn = document.querySelector('#start-btn');
-    const stopBtn = document.querySelector('#stop-btn');
-    const resultDiv = document.querySelector('#result-div');
+const startBtn = document.querySelector('#start-btn');
+const stopBtn = document.querySelector('#stop-btn');
+const resultDiv = document.querySelector('#result-div');
 
-    SpeechRecognition = webkitSpeechRecognition || SpeechRecognition;
-    if ('SpeechRecognition' in window) {
-        // ユーザのブラウザは音声合成に対応しています。
-        } else {
-          alert('このユーザのブラウザは音声合成に対応していません。')
-        }
+SpeechRecognition = webkitSpeechRecognition || SpeechRecognition;
+if ('SpeechRecognition' in window) {
+  // ユーザのブラウザは音声合成に対応しています。
+} else {
+  alert('このユーザのブラウザは音声合成に対応していません。')
+}
 
-      const recognition = new SpeechRecognition();
+const recognition = new SpeechRecognition();
 
-      recognition.lang = 'ja-JP';
-      recognition.interimResults = true;
-      recognition.continuous = true;
+recognition.lang = 'ja-JP';
+recognition.interimResults = true;
+recognition.continuous = true;
 
-      let finalTranscript = ''; // 確定した(黒の)認識結果
+let finalTranscript = ''; // 確定した(黒の)認識結果
 
+recognition.onresult = (event) => {
+  let interimTranscript = ''; // 暫定(灰色)の認識結果
+  for (let i = event.resultIndex; i < event.results.length; i++) {
+    let transcript = event.results[i][0].transcript;
+    if (event.results[i].isFinal) {
+      finalTranscript += transcript;
+    } else {
+      interimTranscript = transcript;
+    }
+    resultDiv.innerHTML = finalTranscript + '<i style="color:#ddd;">' + interimTranscript + '</i>';
+  }
+}
 
-      recognition.onresult = (event) => {
-          let interimTranscript = ''; // 暫定(灰色)の認識結果
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-              let transcript = event.results[i][0].transcript;
-              if (event.results[i].isFinal) {
-                finalTranscript += transcript;
-              } else {
-                interimTranscript = transcript;
-              }
-          resultDiv.innerHTML = finalTranscript + '<i style="color:#ddd;">' + interimTranscript + '</i>';
-          }
-      }
+recognition.start();
 
-      recognition.start();
+startBtn.onclick = () => {
+  recognition.start();
+}
 
-      startBtn.onclick = () => {
-          recognition.start();
-      }
+stopBtn.onclick = () => {
+  recognition.stop();
+}
+</script>
 
-      stopBtn.onclick = () => {
-          recognition.stop();
-      }
-    </script>
 </body>
 </html>
